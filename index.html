@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Спряжение арабских глаголов</title>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box }
+body {
+  margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: #2e0c4a url("logo.png") no-repeat 20px 20px / 200px fixed;
+  min-height: 100vh; padding: 20px; color: #fff;
+}
+.container { max-width: 1000px; margin: 0 auto; }
+.card { background: #fff; padding: 25px 30px; border-radius: 20px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2); color: #333; }
+h1 { text-align: center; margin: 0 0 8px 0; color: #344466; font-size: 18px; }.step { display: none; }
+.step.active { display: block; }
+.label { text-align: center; margin: 0 0 15px 0; font-weight: 500; color: #555; }
+.btn-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 10px 0 20px; }
+.btn {
+  padding: 14px 12px; border-radius: 12px; border: 2px solid #e0e0e0;
+  background: #fff; color: #344466; font-size: 15px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s; min-height: 55px;
+  display: flex; align-items: center; justify-content: center; text-align: center;
+  font-family: "Amiri", serif;
+}
+.btn:hover { border-color: #627ffe; background: #f5f7ff; transform: translateY(-2px); }
+.verb-display { text-align: center; font-size: 38px; color: #627ffe; font-weight: 700;
+  font-family: "Amiri", serif; margin: 10px 0 15px; padding: 15px;
+  background: #f5f7ff; border-radius: 12px; direction: rtl; }
+
+.controls { display: flex; gap: 10px; align-items: center; justify-content: center;
+  margin: 0 0 15px; flex-wrap: wrap; }
+.toggle-btn {
+  padding: 8px 16px; border-radius: 10px; border: 2px solid #b39ddb;
+  background: #fff; color: #5e35b1; font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s; font-family: "Amiri", serif;
+}
+.toggle-btn:hover { background: #ede7f6; }
+.toggle-btn.on { background: #b39ddb; color: #fff; border-color: #5e35b1; }
+
+.table-wrap { overflow-x: auto; }
+.table { width: 100%; border-collapse: collapse; direction: rtl; min-width: 600px; }
+.table th { padding: 12px; text-align: center; font-family: "Amiri", serif; font-size: 18px; }
+.th-pronoun { background: #344466; color: #fff; }
+.th-template { background: #f3e5f5; color: #5e35b1; transition: all 0.2s; width: 150px; max-width: 150px; }
+.th-template.hidden { display: none; }
+.th-tense {
+  background: #e8ecff; color: #344466; cursor: pointer;
+  border: 2px solid transparent; transition: all 0.2s; user-select: none;
+}
+.th-tense:hover { background: #d0d8ff; }
+.th-tense.active { background: #627ffe; color: #fff; border-color: #344466; }
+.table td { padding: 12px 8px; border-bottom: 1px solid #eee; text-align: center;
+  vertical-align: middle; font-family: "Amiri", serif; }
+.template-cell { background: #faf5ff; color: #7b1fa2; font-size: 16px; font-weight: 600; width: 90px; max-width: 90px; }
+.template-cell.hidden { display: none; }
+.pronoun-cell { font-size: 20px; font-weight: 600; color: #344466;
+  cursor: pointer; background: #f5f7ff; }
+.pronoun-cell:hover { background: #e0e8ff; }
+.answer-cell { font-size: 20px; color: #2e0c4a; font-weight: 700; min-height: 30px; }
+.answer-cell.empty { color: #ccc; }
+.nav { display: flex; gap: 10px; margin-top: 20px; }
+.nav-btn { flex: 1; padding: 12px; border-radius: 12px; border: none;
+  background: #627ffe; color: #fff; font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s; }
+.nav-btn.secondary { background: #888; }
+.nav-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
+.back-btn { background: #aaa; margin-bottom: 15px; }
+.back-btn:hover { background: #888; }
+.error { color: #d32f2f; text-align: center; padding: 20px; }
+@media (max-width: 700px) {
+  .btn-grid { grid-template-columns: 1fr; }
+  .card { padding: 20px 15px; }
+  h1 { font-size: 18px; }
+  .verb-display { font-size: 30px; }
+  .table th, .table td { padding: 8px 4px; font-size: 14px; }
+  .pronoun-cell, .answer-cell, .template-cell { font-size: 15px; }
+}
+.verb-row { display: flex; gap: 12px; align-items: center; margin-bottom: 10px; }
+.verb-row .back-btn { flex: 0 0 auto; margin: 0; padding: 8px 14px; font-size: 13px; }
+.verb-row .verb-display { flex: 1; margin: 0; padding: 10px; font-size: 28px; }
+.verb-row { display: flex; gap: 12px; align-items: center; margin-bottom: 10px; }
+.verb-row .back-btn { flex: 0 0 auto; margin: 0; padding: 8px 14px; font-size: 13px; }
+.verb-row .verb-display { flex: 1; margin: 0; padding: 10px; font-size: 28px; }
+</style>
+</head>
+<body>
+<div class="container">
+<div class="card">
+  <h1><img src="logo.png" style="height: 30px; vertical-align: middle;"> Спряжение арабских глаголов</h1>
+  <div class="step active" id="step1">
+    <p class="label">Выберите вид глагола:</p>
+    <div class="btn-grid" id="formsGrid"></div>
+  </div>
+  <div class="step" id="step2">
+    <button class="nav-btn back-btn" onclick="goToStep(1)">← Назад</button>
+    <p class="label">Выберите глагол (ماضِي):</p>
+    <div class="btn-grid" id="verbsGrid"></div>
+  </div>
+  <div class="step" id="step3">
+<div class="verb-row">
+  <button class="nav-btn back-btn" onclick="goToStep(2)">← Выбрать другой глагол</button>
+  <div class="verb-display" id="verbDisplay">—</div>
+  <div class="controls">
+    <button class="toggle-btn" id="templateToggle" onclick="toggleTemplate()">
+      ✦ ШАБЛОН: выкл
+    </button>
+  </div>
+</div>
+    <div class="table-wrap">
+    <table class="table" id="conjugationTable">
+      <thead>
+        <tr>
+          <th class="th-pronoun">الضَّمَائِر</th>
+          <th class="th-template hidden" id="thTemplate">Шаблон (فعل)</th>
+          <th class="th-tense active" data-tense="madi" onclick="setTense('madi')">ماضِي</th>
+          <th class="th-tense" data-tense="mudari" onclick="setTense('mudari')">مضارع</th>
+          <th class="th-tense" data-tense="amr" onclick="setTense('amr')">أمر</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+    </div>
+  </div>
+</div>
+</div>
+
+<script src="verbs.js"></script>
+<script>
+const PRONOUNS = [
+  "هُوَ","هُمَا","هُمْ","هِيَ","هُمَا","هُنَّ",
+  "أَنْتَ","أَنْتُمَا","أَنْتُمْ","أَنْتِ","أَنْتُمَا","أَنْتُنَّ",
+  "أَنَا","نَحْنُ"
+];
+
+const TEMPLATE = {
+  madi:   ["فَعَلَ","فَعَلَا","فَعَلُوا","فَعَلَتْ","فَعَلَتَا","فَعَلْنَ","فَعَلْتَ","فَعَلْتُمَا","فَعَلْتُمْ","فَعَلْتِ","فَعَلْتُمَا","فَعَلْتُنَّ","فَعَلْتُ","فَعَلْنَا"],
+  mudari: ["يَفْعَلُ","يَفْعَلَانِ","يَفْعَلُونَ","تَفْعَلُ","تَفْعَلَانِ","يَفْعَلْنَ","تَفْعَلُ","تَفْعَلَانِ","تَفْعَلُونَ","تَفْعَلِينَ","تَفْعَلَانِ","تَفْعَلْنَ","أَفْعَلُ","نَفْعَلُ"],
+  amr:     ["—","—","—","—","—","—","اِفْعَلْ","اِفْعَلَا","اِفْعَلُوا","اِفْعَلِي","اِفْعَلَا","اِفْعَلْنَ","—","—"]
+};
+
+const FORM_NAMES = {
+  sahih: "صحيح سالم",
+  mudaffa: "مضعف",
+  muetalFaa: "معتلّ الفاء",
+  muetalAin: "معتلّ العين",
+  muetalLam: "معتلّ اللام (ناقص)"
+};
+
+let currentForm = null;
+let currentVerb = null;
+let currentTense = 'madi';
+let templateOn = false;
+let answers = { madi: {}, mudari: {}, amr: {} };
+
+function showStep(n) {
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  document.getElementById('step' + n).classList.add('active');
+}
+function goToStep(n) { showStep(n); }
+
+function makeBtn(text, onClick) {
+  const b = document.createElement('button');
+  b.className = 'btn';
+  b.textContent = text;
+  b.onclick = onClick;
+  return b;
+}
+
+function initStep1() {
+  showStep(1);
+  const grid = document.getElementById('formsGrid');
+  grid.innerHTML = '';
+  Object.keys(VERBS_DB).forEach(key => {
+    if (FORM_NAMES[key]) {
+      grid.appendChild(makeBtn(FORM_NAMES[key], () => {
+        currentForm = key;
+        initStep2();
+      }));
+    }
+  });
+}
+
+function initStep2() {
+  showStep(2);
+  const grid = document.getElementById('verbsGrid');
+  grid.innerHTML = '';
+  const verbs = Object.keys(VERBS_DB[currentForm] || {});
+  if (verbs.length === 0) {
+    grid.innerHTML = '<p class="label">Нет глаголов в этом разделе</p>';
+    return;
+  }
+  verbs.forEach(v => {
+    grid.appendChild(makeBtn(v, () => {
+      currentVerb = v;
+      initStep3();
+    }));
+  });
+}
+
+function initStep3() {
+  showStep(3);
+  document.getElementById('verbDisplay').textContent = currentVerb;
+  answers = { madi: {}, mudari: {}, amr: {} };
+  setTense('madi');
+  renderTable();
+}
+
+function setTense(t) {
+  currentTense = t;
+  document.querySelectorAll('.th-tense').forEach(b => {
+    b.classList.toggle('active', b.dataset.tense === t);
+  });
+  renderTable();
+}
+
+function toggleTemplate() {
+  templateOn = !templateOn;
+  const btn = document.getElementById('templateToggle');
+  btn.classList.toggle('on', templateOn);
+  btn.textContent = templateOn ? '✦ ШАБЛОН: вкл' : '✦ ШАБЛОН: выкл';
+  document.getElementById('thTemplate').classList.toggle('hidden', !templateOn);
+  document.querySelectorAll('.template-cell').forEach(c => {
+    c.classList.toggle('hidden', !templateOn);
+  });
+}
+
+function renderTable() {
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = '';
+  const data = VERBS_DB[currentForm][currentVerb];
+  const template = TEMPLATE[currentTense];
+  PRONOUNS.forEach((p, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="pronoun-cell" data-idx="${i}">${p}</td>
+      <td class="template-cell ${templateOn ? '' : 'hidden'}">${template[i]}</td>
+      <td class="answer-cell madi ${answers.madi[i] ? '' : 'empty'}" data-tense="madi" data-idx="${i}">${answers.madi[i] || '؟'}</td>
+      <td class="answer-cell mudari ${answers.mudari[i] ? '' : 'empty'}" data-tense="mudari" data-idx="${i}">${answers.mudari[i] || '؟'}</td>
+      <td class="answer-cell amr ${answers.amr[i] ? '' : 'empty'}" data-tense="amr" data-idx="${i}">${answers.amr[i] || '؟'}</td>
+    `;
+    tr.querySelector('.pronoun-cell').onclick = () => showAnswerFor(i);
+    tbody.appendChild(tr);
+  });
+  highlightActiveColumn();
+}
+
+function highlightActiveColumn() {
+  document.querySelectorAll('.answer-cell').forEach(c => {
+    c.style.background = c.dataset.tense === currentTense ? '#fff8e1' : 'transparent';
+  });
+}
+
+function showAnswerFor(i) {
+  const data = VERBS_DB[currentForm][currentVerb][currentTense];
+  answers[currentTense][i] = data[i];
+  renderTable();
+}
+
+if (typeof VERBS_DB !== 'undefined' && Object.keys(VERBS_DB).length > 0) {
+  initStep1();
+} else {
+  document.querySelector('.card').innerHTML = '<p class="error">❌ Не удалось загрузить verbs.js<br><br>Убедись, что файл verbs.js лежит в одной папке с index.html</p>';
+}
+</script>
+</body>
+</html>
