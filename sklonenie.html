@@ -9,14 +9,14 @@
 :root{
   --bg:#FBF6E8; --surface:#FFFFFF; --ink:#2B2418; --muted:#6A5F48; --line:#E6D9B0;
   --gold:#8A6510; --gold-soft:#F3E7BF; --green:#13795A; --wine:#7B2238; --hidden:#EFE4C0;
-  --ar:'Amiri','Noto Naskh Arabic','Geeza Pro',serif; --body:'PT Sans','Segoe UI',Arial,sans-serif; --head:'PT Serif',Georgia,serif;
+  --sp:#DCEBE3; --sp-soft:#EEF6F1; --ar:'Amiri','Noto Naskh Arabic','Geeza Pro',serif; --body:'PT Sans','Segoe UI',Arial,sans-serif; --head:'PT Serif',Georgia,serif;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#1D1A12; --surface:#2A261A; --ink:#F2EBD6; --muted:#B9AE90; --line:#4A4228;
-  --gold:#E3C66E; --gold-soft:#3B3418; --green:#5CCFA5; --wine:#F0A0B2; --hidden:#3A3318; color-scheme:dark}}
+  --gold:#E3C66E; --gold-soft:#3B3418; --green:#5CCFA5; --wine:#F0A0B2; --hidden:#3A3318; --sp:#1F3A30; --sp-soft:#27463A; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#1D1A12; --surface:#2A261A; --ink:#F2EBD6; --muted:#B9AE90; --line:#4A4228;
-  --gold:#E3C66E; --gold-soft:#3B3418; --green:#5CCFA5; --wine:#F0A0B2; --hidden:#3A3318; color-scheme:dark}
+  --gold:#E3C66E; --gold-soft:#3B3418; --green:#5CCFA5; --wine:#F0A0B2; --hidden:#3A3318; --sp:#1F3A30; --sp-soft:#27463A; color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);padding-block:20px 32px;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
@@ -48,7 +48,11 @@ thead th{position:sticky;top:0;background:var(--surface);z-index:2}
 .cell{display:flex;align-items:center;justify-content:center;width:100%;min-width:96px;height:62px;border:0;background:var(--hidden);color:var(--muted);font-family:var(--ar);font-size:26px;font-weight:700;transition:background .15s;direction:rtl;unicode-bidi:isolate}
 .cell:hover{background:var(--gold-soft)}
 .cell[aria-pressed="true"]{background:var(--surface);color:var(--ink)}
+.cell.sp{background:var(--sp)}.cell.sp:hover{background:var(--sp-soft)}.cell.sp[aria-pressed="true"]{background:var(--sp-soft)}
+.colh.sp .a{color:var(--green)}
 ::highlight(endc){color:var(--green)}
+.chk{display:flex;align-items:center;gap:6px;font-size:15px;color:var(--ink);cursor:pointer}.chk input{width:18px;height:18px;accent-color:var(--gold)}
+.rowh-cell.du{background:var(--sp-soft)}
 .hint{color:var(--muted);font-size:15px;margin:0}
 @media (prefers-reduced-motion:reduce){.cell{transition:none}}
 @media (max-width:520px){.rowh-cell,.corner{min-width:108px}.cell{min-width:84px}}
@@ -57,34 +61,37 @@ thead th{position:sticky;top:0;background:var(--surface);z-index:2}
   <header>
     <div>
       <h1>Склонение глагола в прошедшем времени</h1>
-      <p class="sub">Назови форму вслух, потом нажми на ячейку, чтобы проверить. Зелёным выделено окончание.</p>
+      <p class="sub">Назови форму вслух, потом нажми на ячейку, чтобы проверить. Зелёным выделено присоединённое местоимение: оно и есть фаʻиль.</p>
     </div>
     <div class="bar">
       <span class="count" id="count" aria-live="polite"></span>
       <button class="btn primary" id="showAll" type="button">Показать всё</button>
       <button class="btn" id="hideAll" type="button">Скрыть всё</button>
       <button class="btn" id="mix" type="button">Перемешать глаголы</button>
+      <label class="chk"><input type="checkbox" id="dual" checked> Двойственное число</label>
     </div>
   </header>
   <div class="scroll"><table id="tbl"></table></div>
-  <p class="hint">Нажми на глагол вверху, чтобы открыть весь столбец, или на местоимение слева, чтобы открыть всю строку.</p>
+  <p class="hint">Зелёные столбцы — глаголы с особенностями: в «كَانَ» и «لَيْسَ» основа меняется (كُنْتُ، لَسْتُ), а в «كُنَّ» и «كُنَّا» нун основы сливается с нуном местоимения. Нажми на глагол вверху, чтобы открыть весь столбец, или на местоимение слева, чтобы открыть всю строку.</p>
 </div>
 <script>
-var PRON=[["هُوَ","он"],["هُمْ","они (м.)"],["هِيَ","она"],["هُنَّ","они (ж.)"],["أَنْتَ","ты (м.)"],["أَنْتُمْ","вы (м.)"],["أَنْتِ","ты (ж.)"],["أَنْتُنَّ","вы (ж.)"],["أَنَا","я"],["نَحْنُ","мы"]];
-var END=["َ","ُوا","َتْ","ْنَ","ْتَ","ْتُمْ","ْتِ","ْتُنَّ","ْتُ","ْنَا"];
-var VERBS=[["ذ","ه","ب","َ","пошёл"],["خ","ر","ج","َ","вышел"],["د","خ","ل","َ","вошёл"],["ج","ل","س","َ","сел"],["ك","ت","ب","َ","написал"],["ش","ر","ب","ِ","выпил"],["أ","ك","ل","َ","съел"],["ف","ت","ح","َ","открыл"],["س","م","ع","ِ","услышал"],["ف","ه","م","ِ","понял"],["غ","س","ل","َ","постирал"],["ل","ع","ب","ِ","поиграл"]];
-var state={};var order=VERBS.map(function(_,i){return i});
-function stem(v){return v[0]+"َ"+v[1]+v[3]+v[2];}
+var PRON=[["هُوَ","он",0],["هُمَا","они двое (м.)",1],["هُمْ","они (м.)",0],["هِيَ","она",0],["هُمَا","они двое (ж.)",1],["هُنَّ","они (ж.)",0],["أَنْتَ","ты (м.)",0],["أَنْتُمَا","вы двое",1],["أَنْتُمْ","вы (м.)",0],["أَنْتِ","ты (ж.)",0],["أَنْتُنَّ","вы (ж.)",0],["أَنَا","я",0],["نَحْنُ","мы",0]];
+var LINK=["َ","َ","ُ","َتْ","َتَ","ْ","ْ","ْ","ْ","ْ","ْ","ْ","ْ"];
+var ATT=["","ا","وا","","ا","نَ","تَ","تُمَا","تُمْ","تِ","تُنَّ","تُ","نَا"];
+function reg(c1,c2,c3,v,ru){var base=c1+"َ"+c2+v+c3;var f=[],p=[];for(var r=0;r<13;r++){f.push(base+LINK[r]+ATT[r]);p.push(ATT[r]);}return{forms:f,pron:p,ru:ru,sp:false};}
+var VERBS=[reg("ذ","ه","ب","َ","пошёл"),reg("خ","ر","ج","َ","вышел"),reg("د","خ","ل","َ","вошёл"),reg("ج","ل","س","َ","сел"),reg("ك","ت","ب","َ","написал"),reg("ش","ر","ب","ِ","выпил"),reg("أ","ك","ل","َ","съел"),reg("ف","ت","ح","َ","открыл"),reg("س","م","ع","ِ","услышал"),reg("ف","ه","م","ِ","понял"),reg("غ","س","ل","َ","постирал"),reg("ل","ع","ب","ِ","поиграл"),
+ {forms:["كَانَ","كَانَا","كَانُوا","كَانَتْ","كَانَتَا","كُنَّ","كُنْتَ","كُنْتُمَا","كُنْتُمْ","كُنْتِ","كُنْتُنَّ","كُنْتُ","كُنَّا"],pron:["","ا","وا","","ا","نَّ","تَ","تُمَا","تُمْ","تِ","تُنَّ","تُ","نَّا"],ru:"был",sp:true},
+ {forms:["لَيْسَ","لَيْسَا","لَيْسُوا","لَيْسَتْ","لَيْسَتَا","لَسْنَ","لَسْتَ","لَسْتُمَا","لَسْتُمْ","لَسْتِ","لَسْتُنَّ","لَسْتُ","لَسْنَا"],pron:["","ا","وا","","ا","نَ","تَ","تُمَا","تُمْ","تِ","تُنَّ","تُ","نَا"],ru:"не быть, нет",sp:true}];
+var state={};var order=VERBS.map(function(_,i){return i});var showDual=true;
+function rows(){var o=[];PRON.forEach(function(p,i){if(showDual||!p[2])o.push(i)});return o;}
 function build(){
   var t=document.getElementById("tbl");var h="<thead><tr><th class='corner' scope='col'>Местоимение</th>";
-  order.forEach(function(vi){var v=VERBS[vi];h+="<th scope='col'><button class='colh' type='button' data-col='"+vi+"'><span class='a'>"+stem(v)+"َ</span><span class='r'>"+v[4]+"</span></button></th>";});
+  order.forEach(function(vi){var v=VERBS[vi];h+="<th scope='col'><button class='colh"+(v.sp?" sp":"")+"' type='button' data-col='"+vi+"'><span class='a'>"+v.forms[0]+"</span><span class='r'>"+v.ru+"</span></button></th>";});
   h+="</tr></thead><tbody>";
-  PRON.forEach(function(p,r){
-    h+="<tr><th scope='row' class='rowh-cell'><button class='rowh' type='button' data-row='"+r+"'><span class='a'>"+p[0]+"</span><span class='r'>"+p[1]+"</span></button></th>";
-    order.forEach(function(vi){var k=vi+"-"+r;var on=!!state[k];var v=VERBS[vi];
-      var rootT=(r<4)?(v[0]+"َ"+v[1]+v[3]):stem(v);var full=(r<4)?(v[0]+"َ"+v[1]+v[3]+v[2]+END[r]):(stem(v)+END[r]);
-      var txt=on?full:"؟";
-      h+="<td><button class='cell' type='button' aria-pressed='"+on+"' data-e='"+(on?rootT.length:-1)+"' data-k='"+k+"' aria-label='"+VERBS[vi][4]+", "+p[1]+"'>"+txt+"</button></td>";});
+  rows().forEach(function(r){var p=PRON[r];
+    h+="<tr><th scope='row' class='rowh-cell"+(p[2]?" du":"")+"'><button class='rowh' type='button' data-row='"+r+"'><span class='a'>"+p[0]+"</span><span class='r'>"+p[1]+"</span></button></th>";
+    order.forEach(function(vi){var k=vi+"-"+r;var on=!!state[k];var v=VERBS[vi];var full=v.forms[r];var pr=v.pron[r];
+      h+="<td><button class='cell"+(v.sp?" sp":"")+"' type='button' aria-pressed='"+on+"' data-e='"+(on&&pr?full.length-pr.length:-1)+"' data-k='"+k+"' aria-label='"+v.ru+", "+p[1]+"'>"+(on?full:"؟")+"</button></td>";});
     h+="</tr>";
   });
   t.innerHTML=h+"</tbody>";count();paint();
@@ -94,18 +101,19 @@ function paint(){
   var rs=[];document.querySelectorAll('.cell').forEach(function(b){var n=+b.dataset.e;var tn=b.firstChild;if(n>=0&&tn&&tn.nodeType===3){var r=document.createRange();r.setStart(tn,n);r.setEnd(tn,tn.length);rs.push(r);}});
   CSS.highlights.set('endc',new Highlight(...rs));
 }
-function count(){var n=0;Object.keys(state).forEach(function(k){if(state[k])n++});document.getElementById("count").textContent="Открыто "+n+" из "+(order.length*PRON.length);}
+function count(){var n=0;rows().forEach(function(r){order.forEach(function(vi){if(state[vi+"-"+r])n++})});document.getElementById("count").textContent="Открыто "+n+" из "+(order.length*rows().length);}
 document.getElementById("tbl").addEventListener("click",function(e){
   var c=e.target.closest(".cell"),col=e.target.closest(".colh"),row=e.target.closest(".rowh");
   if(c){state[c.dataset.k]=!state[c.dataset.k];}
-  else if(col){var vi=col.dataset.col;var all=PRON.every(function(_,r){return state[vi+"-"+r]});PRON.forEach(function(_,r){state[vi+"-"+r]=!all});}
+  else if(col){var vi=col.dataset.col;var all=rows().every(function(r){return state[vi+"-"+r]});rows().forEach(function(r){state[vi+"-"+r]=!all});}
   else if(row){var r=+row.dataset.row;var all2=order.every(function(vi){return state[vi+"-"+r]});order.forEach(function(vi){state[vi+"-"+r]=!all2});}
   else return;
   var keep=document.querySelector(".scroll").scrollLeft;build();document.querySelector(".scroll").scrollLeft=keep;
 });
-document.getElementById("showAll").onclick=function(){order.forEach(function(vi){PRON.forEach(function(_,r){state[vi+"-"+r]=true})});build();};
+document.getElementById("showAll").onclick=function(){order.forEach(function(vi){rows().forEach(function(r){state[vi+"-"+r]=true})});build();};
 document.getElementById("hideAll").onclick=function(){state={};build();};
 document.getElementById("mix").onclick=function(){for(var i=order.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=order[i];order[i]=order[j];order[j]=t;}state={};build();};
+document.getElementById("dual").onchange=function(){showDual=this.checked;build();};
 build();
 </script>
 
